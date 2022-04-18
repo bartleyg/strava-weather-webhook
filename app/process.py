@@ -47,12 +47,15 @@ async def process_event(event):
         # get activity's weather conditions
         activity_conds = get_conditions_during_activity(activity, historical_conds)
         if len(activity_conds) == 0:
-            print("No weather conditions found during activity in past 24 hrs.")
-            return
+            weather_desc = (
+                "No weather conditions found. Was the Strava upload"
+                + " within 24 hours of start of activity?"
+            )
+        else:
+            weather_desc = make_weather_description(activity_conds)
 
-        # create weather description and prepend to original activity description
-        weather_desc = make_weather_description(activity_conds)
         print("weather_desc:", weather_desc)
+        # prepend new weather description to original activity description
         act_desc = f'\n{activity["description"]}' if activity["description"] else ""
         description = weather_desc + act_desc
 
