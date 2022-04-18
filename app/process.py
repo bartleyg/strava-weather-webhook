@@ -30,7 +30,7 @@ async def process_event(event):
             return
 
         # use strava activity start lat/long to get accuweather location key
-        latlong = f'{activity["start_latitude"]}, {activity["start_longitude"]}'
+        latlong = f'{activity["start_latlng"][0]}, {activity["start_latlng"][1]}'
         location_key = await accuweather.get_location_key(sesh, latlong)
         if not location_key:
             return
