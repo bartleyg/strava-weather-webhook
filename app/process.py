@@ -12,11 +12,6 @@ import accuweather
 # webhook business logic to process an event/activity
 async def process_event(event):
     start = time.time()
-    # only process activity created events
-    if not (event["object_type"] == "activity" and event["aspect_type"] == "create"):
-        print("Event is not an activity created event.")
-        return
-
     async with aiohttp.ClientSession() as sesh:
         # get a strava access_token and get strava activity details
         activity_id = event["object_id"]
@@ -73,7 +68,7 @@ def get_conditions_during_activity(activity, historical_conds):
     # start_date_local: "2021-07-28T18:46:00Z"
     start = dateutil.parser.parse(activity["start_date_local"], ignoretz=True)
     end = start + timedelta(seconds=activity["elapsed_time"])
-    print("start:", start - TIME_TOLERANCE, "end:", end + TIME_TOLERANCE)
+    print("start-15m:", start - TIME_TOLERANCE, "end+15m:", end + TIME_TOLERANCE)
 
     conditions = []
     timedeltas_from_activity = []
@@ -84,7 +79,7 @@ def get_conditions_during_activity(activity, historical_conds):
             cond["LocalObservationDateTime"], ignoretz=True
         )
         if start - TIME_TOLERANCE <= observe_time <= end + TIME_TOLERANCE:
-            print("observe_time in window:", observe_time)
+            print("weather observe_time in activity window:", observe_time)
             conditions.append(cond)
         # store the timedelta from activity
         observe_timedelta = min(abs(start - observe_time), abs(end - observe_time))
@@ -94,12 +89,16 @@ def get_conditions_during_activity(activity, historical_conds):
     # where no condition is within the activity window.
     # exclude condition where activity could be too far in past (3 hrs).
     if len(conditions) == 0:
+        print("no weather conditions found within activity window.")
         min_timedelta = min(timedeltas_from_activity)
         print("min_timedelta:", min_timedelta)
         if min_timedelta <= timedelta(hours=3):
+            print("activity within 3 hrs of a weather condition.")
             conditions.append(
                 historical_conds[timedeltas_from_activity.index(min_timedelta)]
             )
+        else:
+            print("activity too old, not within 3 hrs of a weather condition.")
 
     return conditions
 
