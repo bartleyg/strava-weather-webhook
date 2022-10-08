@@ -48,15 +48,11 @@ async def process_event(event):
             )
         else:
             weather_desc = make_weather_description(activity_conds)
-
         print("weather_desc:", weather_desc)
-        # prepend new weather description to original activity description
-        act_desc = f'\n{activity["description"]}' if activity["description"] else ""
-        description = weather_desc + act_desc
 
         # update the strava activity with the new description
         await strava.update_activity_description(
-            sesh, activity_id, description, access_token
+            sesh, activity_id, weather_desc, access_token
         )
         seconds = time.time() - start
         print(f"process_event took {seconds:.3f}s.")
