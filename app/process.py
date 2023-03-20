@@ -51,9 +51,11 @@ async def process_event(event):
         print("weather_desc:", weather_desc)
 
         # update the strava activity with the new description
-        await strava.update_activity_description(
+        updated_activity = await strava.update_activity_description(
             sesh, activity_id, weather_desc, access_token
         )
+        print("updated_activity:")
+        print(updated_activity)
         seconds = time.time() - start
         print(f"process_event took {seconds:.3f}s.")
 
